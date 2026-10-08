@@ -22,7 +22,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "npm run secrets:check && npm run typecheck && npm run lint && npm run format:check && npm run test",
-    "prepare": "git config core.hooksPath .githooks || true",
+    "prepare": "git config core.hooksPath .githooks 2>/dev/null || true",
     "secrets:check": "node scripts/check-secrets.mjs"
   },
   "devDependencies": {

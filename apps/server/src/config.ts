@@ -10,6 +10,24 @@ const csv = z
       .filter(Boolean),
   );
 
+/**
+ * Free models verified to follow the artifact protocol (October 2026). Used
+ * when the env doesn't override them, so only the API key is required.
+ */
+const DEFAULT_MODELS = [
+  'nvidia/nemotron-3-ultra-550b-a55b:free',
+  'poolside/laguna-s-2.1:free',
+  'google/gemma-4-31b-it:free',
+  'nvidia/nemotron-3-super-120b-a12b:free',
+];
+const DEFAULT_FALLBACK_MODELS = [
+  'nvidia/nemotron-3-ultra-550b-a55b:free',
+  'nvidia/nemotron-3-super-120b-a12b:free',
+];
+
+/** Comma-separated list; empty or unset means `fallback`. */
+const csvOr = (fallback: string[]) => csv.transform((list) => (list.length > 0 ? list : fallback));
+
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.coerce.number().int().positive().default(8787),
@@ -18,10 +36,8 @@ const envSchema = z.object({
 
   OPENROUTER_API_KEY: z.string().min(1, 'OPENROUTER_API_KEY is required'),
   OPENROUTER_BASE_URL: z.url().default('https://openrouter.ai/api/v1'),
-  OPENROUTER_MODELS: csv.pipe(
-    z.array(z.string()).min(1, 'OPENROUTER_MODELS needs at least one model'),
-  ),
-  OPENROUTER_FALLBACK_MODELS: csv,
+  OPENROUTER_MODELS: csvOr(DEFAULT_MODELS),
+  OPENROUTER_FALLBACK_MODELS: csvOr(DEFAULT_FALLBACK_MODELS),
   MAX_OUTPUT_TOKENS: z.coerce.number().int().positive().default(16_000),
   /** Caps thinking on reasoning models so they don't spend the whole budget before writing code. */
   REASONING_EFFORT: z.enum(['default', 'low', 'medium', 'high']).default('low'),

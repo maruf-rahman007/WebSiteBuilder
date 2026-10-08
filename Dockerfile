@@ -13,8 +13,12 @@ COPY . .
 RUN npm run build
 
 FROM node:22-alpine AS runtime
+# TRUST_PROXY=1: hosts like Render/Fly/Railway put one proxy in front of the
+# container; without it every visitor shares the proxy's IP and one rate limit.
+# Set TRUST_PROXY=0 if you expose the container directly to the internet.
 ENV NODE_ENV=production \
     PORT=8787 \
+    TRUST_PROXY=1 \
     SERVE_STATIC_DIR=/app/public
 WORKDIR /app
 COPY package.json package-lock.json ./
