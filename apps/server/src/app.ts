@@ -77,6 +77,10 @@ export function createApp({
         contentSecurityPolicy: false,
         crossOriginEmbedderPolicy: { policy: 'require-corp' },
         crossOriginOpenerPolicy: { policy: 'same-origin' },
+        // Helmet's default `no-referrer` hides our origin from the StackBlitz
+        // iframe that WebContainer.boot() loads, and boot never completes.
+        // The browser default sends only the origin cross-site, never paths.
+        referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
       }),
     );
     app.use(

@@ -5,6 +5,11 @@ import { dependencySignature, toFileSystemTree } from './file-system-tree';
 import { OutputBuffer } from './output-buffer';
 
 const DEV_SERVER_TIMEOUT_MS = 120_000;
+const BOOT_TIMEOUT_MS = 45_000;
+const BOOT_TIMEOUT_MESSAGE =
+  "The in-browser runtime didn't start. Usually a browser extension or privacy setting " +
+  '(Brave Shields, uBlock, strict tracking protection) is blocking stackblitz.com, or the ' +
+  'browser is unsupported. Try Chrome or Edge with extensions off, then reload.';
 const INSTALL_ARGS = ['install', '--no-audit', '--no-fund', '--loglevel=error'];
 
 export type DependencyResult = 'installed' | 'unchanged';
@@ -28,6 +33,12 @@ export class WorkbenchRuntime {
   private devServerUrl: Promise<string> | null = null;
   private serverReadyWaiters = new Set<(url: string) => void>();
 
+  /**
+   * True once boot timed out. The WebContainer library caches its first boot
+   * attempt, so recovery needs a page reload rather than a retry.
+   */
+  bootStalled = false;
+
   get isSupported(): boolean {
     return typeof window !== 'undefined' && window.crossOriginIsolated;
   }
@@ -36,9 +47,9 @@ export class WorkbenchRuntime {
   boot(initialFiles: ProjectFiles): Promise<WebContainer> {
     this.container ??= this.doBoot(initialFiles).catch((error: unknown) => {
       this.container = null;
-      useRuntimeStore
-        .getState()
-        .setStatus('error', errorMessage(error, 'Failed to start the in-browser runtime'));
+      const message = errorMessage(error, 'Failed to start the in-browser runtime');
+      this.output.write(`\x1b[31m✖ ${message}\x1b[0m\r\n`);
+      useRuntimeStore.getState().setStatus('error', message);
       throw error;
     });
     return this.container;
@@ -128,11 +139,22 @@ export class WorkbenchRuntime {
     store.setStatus('booting');
     this.output.write('\x1b[2m$ booting WebContainer…\x1b[0m\r\n');
 
-    const wc = await WebContainer.boot({
-      coep: 'require-corp',
-      workdirName: 'project',
-      forwardPreviewErrors: 'exceptions-only',
-    });
+    // boot() waits forever for a handshake from a hidden stackblitz.com
+    // iframe. If something blocks that iframe, fail loudly instead of hanging.
+    let bootTimer: ReturnType<typeof setTimeout> | undefined;
+    const wc = await Promise.race([
+      WebContainer.boot({
+        coep: 'require-corp',
+        workdirName: 'project',
+        forwardPreviewErrors: 'exceptions-only',
+      }),
+      new Promise<never>((_, reject) => {
+        bootTimer = setTimeout(() => {
+          this.bootStalled = true;
+          reject(new Error(BOOT_TIMEOUT_MESSAGE));
+        }, BOOT_TIMEOUT_MS);
+      }),
+    ]).finally(() => clearTimeout(bootTimer));
 
     wc.on('server-ready', (_port, url) => {
       useRuntimeStore.getState().setPreviewUrl(url);

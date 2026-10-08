@@ -108,14 +108,20 @@ function PreviewPlaceholder({ status, error }: { status: RuntimeStatus; error: s
           <TriangleAlert className="mx-auto mb-3 h-6 w-6 text-danger" />
           <p className="text-sm text-fg">{error ?? 'The preview stopped.'}</p>
           <p className="mt-1 text-xs text-fg-subtle">Open the terminal for details.</p>
-          {runtime.isSupported && (
-            <Button
-              size="sm"
-              className="mt-4"
-              onClick={() => void runtime.restartDevServer().catch(() => undefined)}
-            >
-              <RefreshCw className="h-3.5 w-3.5" /> Restart dev server
+          {runtime.bootStalled ? (
+            <Button size="sm" className="mt-4" onClick={() => window.location.reload()}>
+              <RefreshCw className="h-3.5 w-3.5" /> Reload page
             </Button>
+          ) : (
+            runtime.isSupported && (
+              <Button
+                size="sm"
+                className="mt-4"
+                onClick={() => void runtime.restartDevServer().catch(() => undefined)}
+              >
+                <RefreshCw className="h-3.5 w-3.5" /> Restart dev server
+              </Button>
+            )
           )}
         </div>
       </div>
