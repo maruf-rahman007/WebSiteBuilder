@@ -1,0 +1,25 @@
+# Dependencies & build output
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+.vite/
+
+# Secrets: never commit. Only *.example env files are tracked.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+
+# OS / editor / logs
+.DS_Store
+*.log
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.claude/

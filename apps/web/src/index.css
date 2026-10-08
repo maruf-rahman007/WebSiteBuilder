@@ -1,0 +1,121 @@
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/jetbrains-mono';
+@import '@xterm/xterm/css/xterm.css';
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-canvas: #09090b;
+  --color-surface: #111113;
+  --color-surface-2: #18181b;
+  --color-surface-3: #222226;
+  --color-line: #27272a;
+  --color-line-strong: #3f3f46;
+  --color-fg: #fafafa;
+  --color-fg-muted: #a1a1aa;
+  --color-fg-subtle: #71717a;
+  --color-accent: #8b5cf6;
+  --color-accent-strong: #7c3aed;
+  --color-accent-soft: rgb(139 92 246 / 0.14);
+  --color-success: #34d399;
+  --color-danger: #f87171;
+  --color-warning: #fbbf24;
+
+  --animate-fade-in: fade-in 240ms ease-out both;
+  --animate-shimmer: shimmer 2.2s linear infinite;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes shimmer {
+    from {
+      background-position: -200% 0;
+    }
+    to {
+      background-position: 200% 0;
+    }
+  }
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-canvas text-fg font-sans antialiased;
+    color-scheme: dark;
+  }
+  ::selection {
+    background: rgb(139 92 246 / 0.35);
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line-strong) transparent;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+}
+
+@utility text-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-fg-subtle) 0%,
+    var(--color-fg) 50%,
+    var(--color-fg-subtle) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: var(--animate-shimmer);
+}
+
+/* Markdown prose in chat messages */
+.prose-chat {
+  @apply text-sm leading-relaxed text-fg/90;
+}
+.prose-chat p {
+  @apply my-2 first:mt-0 last:mb-0;
+}
+.prose-chat ul {
+  @apply my-2 list-disc pl-5;
+}
+.prose-chat ol {
+  @apply my-2 list-decimal pl-5;
+}
+.prose-chat code {
+  @apply rounded bg-surface-3 px-1 py-0.5 font-mono text-[0.85em];
+}
+.prose-chat pre {
+  @apply my-2 overflow-x-auto rounded-lg border border-line bg-canvas p-3 text-xs;
+}
+.prose-chat pre code {
+  @apply bg-transparent p-0;
+}
+.prose-chat a {
+  @apply text-accent underline underline-offset-2;
+}
+
+.cm-editor {
+  height: 100%;
+  font-size: 13px;
+}
+.cm-editor .cm-scroller {
+  font-family: var(--font-mono);
+}
+.xterm .xterm-viewport {
+  background-color: transparent !important;
+}

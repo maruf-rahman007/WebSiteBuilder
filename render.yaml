@@ -1,0 +1,33 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# One free web service serving the API and the built web app from one origin.
+# OPENROUTER_API_KEY is `sync: false`: Render asks for it in the dashboard; it
+# is never stored in this repository.
+services:
+  - type: web
+    name: website-builder
+    runtime: node
+    plan: free
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: '22'
+      - key: NODE_ENV
+        value: production
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: SERVE_STATIC_DIR
+        value: ../web/dist
+      - key: TRUST_PROXY
+        value: '1'
+      - key: OPENROUTER_MODELS
+        value: nvidia/nemotron-3-ultra-550b-a55b:free,poolside/laguna-s-2.1:free,google/gemma-4-31b-it:free,nvidia/nemotron-3-super-120b-a12b:free
+      - key: OPENROUTER_FALLBACK_MODELS
+        value: nvidia/nemotron-3-ultra-550b-a55b:free,nvidia/nemotron-3-super-120b-a12b:free
+      - key: REASONING_EFFORT
+        value: low
+      - key: RATE_LIMIT_MAX
+        value: '20'

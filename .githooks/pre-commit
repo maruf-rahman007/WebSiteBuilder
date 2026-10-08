@@ -1,0 +1,3 @@
+#!/bin/sh
+# Blocks commits containing credentials. Enabled by `npm install` (prepare script).
+exec node scripts/check-secrets.mjs --staged

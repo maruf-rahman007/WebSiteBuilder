@@ -1,0 +1,38 @@
+{
+  "name": "websitebuilder",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Prompt-to-React-app builder running generated code in WebContainers.",
+  "type": "module",
+  "packageManager": "npm@11.12.1",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n server,web -c blue,magenta \"npm:dev -w @wb/server\" \"npm:dev -w @wb/web\"",
+    "build": "npm run build -w @wb/server && npm run build -w @wb/web",
+    "start": "npm run start -w @wb/server",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run secrets:check && npm run typecheck && npm run lint && npm run format:check && npm run test",
+    "prepare": "git config core.hooksPath .githooks || true",
+    "secrets:check": "node scripts/check-secrets.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "concurrently": "^10.0.6",
+    "eslint": "^10.12.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.9",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.1"
+  }
+}
